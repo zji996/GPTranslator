@@ -10,8 +10,9 @@ $ pip install -r requirments
 
 ## Usage
 Change the `run.py` file to your needs.
-put your srt subtitle files to srt folder.
+Put your srt subtitle files in the `srt` folder, 
+then run the `run.py` file.
 ```sh
 $ python run.py
 ```
-you can see translated subtitle in the `srtt` folder.
+You can see translated subtitle files in the `srtt` folder.
