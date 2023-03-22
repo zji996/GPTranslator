@@ -21,4 +21,4 @@ if __name__ == '__main__':
         if not os.path.exists(output_file_dir):
             os.makedirs(output_file_dir)
 
-        SubsTranslator(srt_file, output_file, language, OpenAI_API,playrole, relative_path=relative_path, progress_file=progress_file)
+        SubsTranslator(srt_file, output_file, language, OpenAI_API,playrole = playrole, relative_path=relative_path, progress_file=progress_file)
