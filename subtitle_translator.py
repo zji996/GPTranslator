@@ -49,7 +49,7 @@ def save_progress(file_path, progress):
 
 def load_glossary(file_path):
     if os.path.exists(file_path):
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             return json.load(f)
     else:
         return {}
