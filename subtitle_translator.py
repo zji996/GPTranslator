@@ -47,8 +47,21 @@ def save_progress(file_path, progress):
     with open(file_path, 'w') as f:
         json.dump(progress, f)
 
+def load_glossary(file_path):
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            return json.load(f)
+    else:
+        return {}
 
-def SubsTranslator(src, des, target, API, playrole='', relative_path='', progress_file=''):
+def find_glossary_terms(text, glossary):
+    terms_found = []
+    for term, definition in glossary.items():
+        if term in text:
+            terms_found.append((term, definition))
+    return terms_found
+
+def SubsTranslator(src, des, target, API, playrole='', relative_path='', progress_file='', glossary={}):
     if os.path.exists(des):
         subs = pysrt.open(des)
     else:
@@ -57,7 +70,12 @@ def SubsTranslator(src, des, target, API, playrole='', relative_path='', progres
     start_index = progress.get(relative_path, 0)
     for idx, sub in enumerate(subs[start_index:]):
         original_text = sub.text
-        translated_text = translate_text(original_text, target, API, playrole).replace('。', ' ').replace('，', ' ').replace('\"', '').replace('“', '').replace('”', '')
+        glossary_terms = find_glossary_terms(original_text, glossary)
+        glossary_text = " ".join([f"{term}: {definition}" for term, definition in glossary_terms])
+        playrole_with_glossary = f"{playrole} ,The following is a glossary: {glossary_text}" if glossary_terms else playrole
+        if glossary_terms:
+            print(f"Found glossary terms: {glossary_terms}")
+        translated_text = translate_text(original_text, target, API, playrole_with_glossary).replace('。', ' ').replace('，', ' ').replace('\"', '').replace('“', '').replace('”', '')
         if translated_text:
             sub.text = f"{translated_text}\\n{original_text}"
             subs.save(des, encoding='utf-8')
@@ -69,5 +87,6 @@ def SubsTranslator(src, des, target, API, playrole='', relative_path='', progres
         time.sleep(0.5)
 
     print(f"Translated {src} to {des}.")
+
 
 
