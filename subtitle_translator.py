@@ -3,8 +3,8 @@ import openai
 import time
 import json
 import os
-def translate_text(text, target_language, api_key, 
-                   playrole, max_retries=3, retry_interval=3):
+def process_text(text, target_language, api_key, 
+                   playrole,task, max_retries=3, retry_interval=3):
     openai.api_key = api_key
     retries = 0
     
@@ -20,7 +20,7 @@ def translate_text(text, target_language, api_key,
                     {
                 
                         "role": "user",
-                        "content": f'Translate the following text to {target_language}: "{text}"'
+                        "content": f'{task} {target_language}: "{text}"'
                     }
                 ]
             )
@@ -61,7 +61,7 @@ def find_glossary_terms(text, glossary):
             terms_found.append((term, definition))
     return terms_found
 
-def SubsTranslator(src, des, target, API, playrole='', relative_path='', progress_file='', glossary={}):
+def SubsTranslator(src, des, targetlanguage, API, playrole='',task='Translate the following text to', relative_path='', progress_file='', glossary={}):
     if os.path.exists(des):
         subs = pysrt.open(des)
     else:
@@ -75,7 +75,7 @@ def SubsTranslator(src, des, target, API, playrole='', relative_path='', progres
         playrole_with_glossary = f"{playrole} ,The following is a glossary: {glossary_text}" if glossary_terms else playrole
         if glossary_terms:
             print(f"Found glossary terms: {glossary_terms}")
-        translated_text = translate_text(original_text, target, API, playrole_with_glossary).replace('。', ' ').replace('，', ' ').replace('\"', '').replace('“', '').replace('”', '')
+        translated_text = process_text(original_text, targetlanguage, API, playrole_with_glossary,task).replace('。', ' ').replace('，', ' ').replace('\"', '').replace('“', '').replace('”', '')
         if translated_text:
             sub.text = f"{translated_text}\\n{original_text}"
             subs.save(des, encoding='utf-8')
@@ -88,5 +88,15 @@ def SubsTranslator(src, des, target, API, playrole='', relative_path='', progres
 
     print(f"Translated {src} to {des}.")
 
-
-
+def SubsSummarizer(src, des, target_language, api_key, playrole='', task='Summarize the following text to', start_index=0, end_index=None):
+    subs = pysrt.open(src)
+    if end_index is None:
+        end_index = len(subs)
+    long_text = " ".join([sub.text for sub in subs[start_index:end_index]])
+    summarized_text = process_text(long_text, target_language, api_key, playrole, task)
+    if summarized_text is not None:
+        with open(des, 'w') as outfile:
+            outfile.write(summarized_text)
+        print(f"Summarized {summarized_text} to {des}.")
+    else:
+        print("Summarization failed.")
